@@ -7,8 +7,10 @@ class Parent extends Component {
   render() {
     return (
       <div>
-        <Header />
-        <App />
+        <div className="wrapper">
+          <Header />
+          <App />
+        </div>
         <Footer />
       </div>
     );
@@ -35,15 +37,13 @@ class App extends Component {
       player: '27x17'
     };
   }
+  componentWillMount() {
+    document.addEventListener("keydown", this.handleKeyDown);
+  }
   render() {
     return (
       <div className="App">
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-        <input onKeyDown={this.handleKeyPress} />
-        
-        <div onKeyDown={this.handleKeyPress}>
+        <div>
           {this.generateMap()}
         </div>
       </div>
@@ -56,12 +56,12 @@ class App extends Component {
     let map = Object.assign({}, this.state.map);
     //set class @ player position
     map[this.state.player] = 'player';
-    
+
     //set class for walls
-    this.state.wall.map((id) => {
+    this.state.wall.forEach((id) => {
       map[id] = 'wall';
     });
-    
+
     //generate map
     let render = [];
     let w = mapWidth / x;
@@ -88,8 +88,33 @@ class App extends Component {
     let target = [ e.target.id ];
     this.update('wall', target);
   }
-  handleKeyPress = (e) => {
-    console.log('key', e.key);
+  handleKeyDown = (e) => {
+    //tip on held down key https://forum.freecodecamp.org/t/dungeon-crawler-feedback-please/43394/11
+    let walls = this.state.wall;
+    let curPos = this.state.player.split('x');
+    let xPos = parseInt(curPos[0]), yPos = parseInt(curPos[1]);
+    let newPos = curPos;
+    switch (e.key) {
+      case 'ArrowUp': yPos--;
+        break;
+      case 'ArrowDown': yPos++;
+        break;
+      case 'ArrowRight': xPos++;
+        break;
+      case 'ArrowLeft': xPos--;
+        break;
+      default: break;
+    }
+
+    if (xPos < x && xPos >= 0 && yPos < y && yPos >=0) {
+      newPos = xPos.toString() + 'x' + yPos.toString();
+      if (!walls.includes(newPos)) {
+        this.setState({
+          player: newPos
+        })
+      }
+    }
+
   }
   update = (newClass, target) => {
     let wall = this.state.wall.slice();
@@ -108,20 +133,3 @@ class App extends Component {
 
 
 export default Parent;
-/*
-let w = mapWidth / x;
-let h = w;
-let board = [];
-for (let j=0; j<y; j++) {
-  for (let i=0; i<x; i++) {
-    let pos = i+'x'+j;
-    defaultMap.pos = (
-          <span key={pos} id={pos} >
-            <svg width={w} height={h}>
-              <rect id={pos} className={this.state.map[pos]} width={w} height={h} />
-            </svg>
-          </span>
-        );
-    }
-}
-*/

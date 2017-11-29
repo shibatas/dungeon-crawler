@@ -1,12 +1,12 @@
 //number of cells, [x, y]
-const size = [60, 40];
-const x = 60, y = 40;
+const size = [30, 20];
+const x = 30, y = 20;
 //map width
 const mapWidth = 800;
 //initial state of the board (empty board)
 let emptyMap = {};
-for (let j=0; j<size[1]; j++) {
-  for (let i=0; i<size[0]; i++) {
+for (let j=0; j<y; j++) {
+  for (let i=0; i<x; i++) {
     emptyMap[i+'x'+j] = "default";
   }
 }
