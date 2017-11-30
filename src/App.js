@@ -58,14 +58,18 @@ class Game extends Component {
       map: config.emptyMap,
       wall: config.map[config.defaultLevel].wall,
       player: {
-        position: config.player
+        position: config.player,
+        hp: 100,
+        exp: 0,
+        weapon: 10
       },
       enemy: {
         position: null
       },
       boss: {
         position: config.map[config.defaultLevel].boss
-      }
+      },
+      messages: ['Click BEGIN to start!']
     });
   }
   componentWillMount() {
@@ -83,7 +87,11 @@ class Game extends Component {
   render() {
     return (
       <div>
-        <Map map={this.generate()} />
+        <Top messages={this.state.messages} />
+        <div className="game">
+          <Map map={this.generate()} />
+          <Side player={this.state.player} />
+        </div>
       </div>
     );
   }
@@ -112,10 +120,10 @@ class Game extends Component {
       newPos = xPos.toString() + 'x' + yPos.toString();
       let target = this.state.map[newPos];
       if (target.match(/^(default|weapon|health)$/)) {
+        let newState = Object.assign({}, this.state.player);
+        newState.position = newPos;
         this.setState({
-          player: {
-            position: newPos
-          }
+          player: newState
         });
       }
     }
@@ -211,6 +219,33 @@ class Map extends Component {
   render() {
     return (
       <div className="map">{this.props.map}</div>
+    );
+  }
+}
+
+class Side extends Component {
+  render() {
+    return (
+      <div className="side" style={{height: config.mapHeight}} >
+        <h3>HP</h3>
+        <p>{this.props.player.hp}</p>
+        <h3>Exp</h3>
+        <p>{this.props.player.exp}</p>
+        <h3>Weapon</h3>
+        <p>{this.props.player.weapon}</p>
+      </div>
+    );
+  }
+}
+
+class Top extends Component {
+  render() {
+    return (
+      <div className="top">
+        {this.props.messages.map((item) => {
+          return <p>{item}</p>;
+        })}
+      </div>
     );
   }
 }

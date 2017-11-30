@@ -32,9 +32,18 @@ footer {
   font-size: 1.5em;
 }
 
+/* Game Area */
+.game {
+  margin-bottom: 50px;
+  height: auto;
+  display: flex;
+  justify-content: center;
+}
+
 /* Map */
 .map {
-  margin: 50px;
+  margin: 0;
+  padding-left: 120px;
 }
 .default {
   opacity: 0;
@@ -57,4 +66,15 @@ footer {
   background-color: red;
   box-shadow: 2px 2px 1px black;
   border-radius: 50%;
+}
+
+/* Side Box */
+.side {
+  width: 100px;
+  margin-left: 20px;
+}
+
+.top {
+  height: auto;
+  width: 100%;
 }
