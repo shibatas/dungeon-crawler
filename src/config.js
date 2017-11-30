@@ -5,6 +5,8 @@ const mapWidth = 800;
 //block size
 let w = mapWidth / x;
 let h = w;
+//height of map area
+let mapHeight = y*h;
 //initial state of the board (empty board)
 let emptyMap = {};
 for (let j=0; j<y; j++) {
@@ -858,6 +860,7 @@ let config = {
   w: w,
   h: h,
   mapWidth: mapWidth,
+  mapHeight: mapHeight,
   emptyMap: emptyMap,
   map: {
     1: level1
