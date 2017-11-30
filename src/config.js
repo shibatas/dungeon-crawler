@@ -845,6 +845,13 @@ let level = {
   }
 };
 
+//game board block css
+let style = {
+  display: 'inline-block',
+  width: w,
+  height: h
+};
+
 let config = {
   x: x,
   y: y,
@@ -855,7 +862,9 @@ let config = {
   map: {
     1: level1
   },
+  defaultLevel: 1,
   player: initPos,
-  level: level
+  level: level,
+  style: style
 };
 export {config};
