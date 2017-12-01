@@ -3,20 +3,21 @@ const x = 60, y = 40;
 //map width
 const mapWidth = 800;
 //block size
-let w = mapWidth / x;
-let h = w;
+const w = mapWidth / x;
+const h = w;
 //height of map area
-let mapHeight = y*h;
+const mapHeight = y*h;
+const defaultLevel = 0;
 //initial state of the board (empty board)
-let emptyMap = {};
+let initMap = {};
 for (let j=0; j<y; j++) {
   for (let i=0; i<x; i++) {
-    emptyMap[i+'x'+j] = "default";
+    initMap[i+'x'+j] = "default";
   }
 }
 
 //let noWall = [];
-let level1 = {
+let map = [{
   wall: [
   "23x12",
   "24x12",
@@ -831,19 +832,26 @@ let level1 = {
   "43x20"
 ],
   boss: '3x37'
-}
+}];
+
+map[defaultLevel].wall.forEach((item) => {
+  initMap[item] = 'wall';
+});
 
 let initPos = parseInt(x/2,10) + "x" + parseInt(y/2,10);
 
 let level = {
   easy: {
-    enemy: 8
+    count: 8,
+    attack: 10
   },
   medium: {
-    enemy: 12
+    count: 12,
+    attack: 15
   },
   hard: {
-    enemy: 20
+    count: 20,
+    attack: 20
   }
 };
 
@@ -861,11 +869,11 @@ let config = {
   h: h,
   mapWidth: mapWidth,
   mapHeight: mapHeight,
-  emptyMap: emptyMap,
+  initMap: initMap,
   map: {
-    1: level1
+    0: map[0]
   },
-  defaultLevel: 1,
+  defaultLevel: 0,
   player: initPos,
   level: level,
   style: style
