@@ -77,11 +77,11 @@ class Game extends Component {
   }
   componentWillReceiveProps(nextProps) {
     if (this.props.gameState !== nextProps.gameState && nextProps.gameState === 'run') {
-      this.generateEnemy();
+      this.start();
     }
   }
   componentWillUpdate() {
-    //console.log(this.state);
+    //console.log(this.state.enemy);
   }
   render() {
     return (
@@ -131,31 +131,38 @@ class Game extends Component {
     }
   }
   start = () => {
-    this.generateEnemy();
+    let oldState = Object.assign({}, this.state)
+    let newState = this.generateContents(oldState);
+
+    newState.map[this.state.boss.position] = 'boss';
+
+    this.setState(newState);
   }
   fight = (loc) => {
     let message = '';
     let map = Object.assign({}, this.state.map);
-    
+
     let playerStat = Object.assign({}, this.state.player);
     let enemyStat = Object.assign({}, this.state.enemy);
-    
+
+    console.log(enemyStat);
+
     let playerAttack = playerStat.level*playerStat.weapon;
     let enemyAttack = enemyStat[loc].level*this.props.setting.attack;
-    
+
     playerStat.hp -= enemyAttack;
     enemyStat[loc].hp -= playerAttack;
-    
+
     if (playerStat.hp <= 0) {
-      alert("Game Over"); 
+      alert("Game Over");
     } else if (enemyStat[loc].hp <=0) {
       let expUp = enemyStat[loc].level*10;
       playerStat.exp += expUp;
       map[loc] = 'default';
       playerStat.position = loc;
       message = 'Enemy defeated... EXP gained: ' + expUp;
-    } 
-    
+    }
+
     this.setState({
       map: map,
       player: playerStat,
@@ -183,41 +190,50 @@ class Game extends Component {
     }
     return render;
   }
-  generateEnemy = () => {
-    console.log('generate enemy');
-    const enemyCount = this.props.setting.count;
-    let position = {};
+  generateContents = (oldState) => {
+    console.log('generate contents');
+    let types = ['enemy', 'health', 'weapon'];
+    let counts = [this.props.setting.count, 10, 5];
+
+    let newMap = oldState.map;
     let stats = {};
-    for (let i=0; i<enemyCount; i++) {
-      let minX = parseInt(config.x/enemyCount*(i), 10);
-      let maxX = parseInt(config.x/enemyCount*(i+1), 10);
-      let minY = 0;
-      let maxY = config.y;
-      let x, y, pos;
-      let valid = false;
-      while (!valid) {
-        x = parseInt((maxX-minX)*Math.random()+minX, 10);
-        y = parseInt((maxY-minY)*Math.random()+minY, 10);
-        pos = x + 'x' + y;
-        if (this.state.map[pos] === 'default' && pos !== this.state.player.position) { 
-          valid = true; 
+
+    types.forEach((type, index) => {
+      let updates = {};
+      let count = counts[index];
+      for (let i=0; i<count; i++) {
+        let minX = parseInt(config.x/count*(i), 10);
+        let maxX = parseInt(config.x/count*(i+1), 10);
+        let minY = 0;
+        let maxY = config.y;
+        let x, y, pos;
+        let valid = false;
+        while (!valid) {
+          x = parseInt((maxX-minX)*Math.random()+minX, 10);
+          y = parseInt((maxY-minY)*Math.random()+minY, 10);
+          pos = x + 'x' + y;
+          if (this.state.map[pos] === 'default' && pos !== this.state.player.position) {
+            valid = true;
+          }
+        }
+        updates[pos] = type;
+
+        if (type === 'enemy') {
+          stats[pos] = {
+            level: 1,
+            hp: 10
+          };
         }
       }
-      position[pos] = 'enemy';
-      stats[pos] = {
-        level: 1,
-        hp: 10
-      };
-    }
+      newMap = Object.assign(newMap, updates);
+    });
 
-    position[this.state.boss.position] = 'boss';
-
-    let newMap = Object.assign(this.state.map, position);
-
-    this.setState({
+    let output = {
       map: newMap,
       enemy: stats
-    });
+    }
+
+    return output;
   }
   update = (val, target) => {
     console.log('update', target);
