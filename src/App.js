@@ -55,25 +55,24 @@ class Game extends Component {
   constructor(props) {
     super(props);
     this.state = ({
-      map: config.emptyMap,
+      map: config.initMap,
       wall: config.map[config.defaultLevel].wall,
       player: {
         position: config.player,
         hp: 100,
         exp: 0,
+        level: 1,
         weapon: 10
       },
-      enemy: {
-        position: null
-      },
+      enemy: {},
       boss: {
-        position: config.map[config.defaultLevel].boss
+        position: config.map[config.defaultLevel].boss,
+        hp: 100
       },
-      messages: ['Click BEGIN to start!']
+      message: 'Click BEGIN to start!'
     });
   }
   componentWillMount() {
-    this.generateWall();
     document.addEventListener("keydown", this.handleKeyDown);
   }
   componentWillReceiveProps(nextProps) {
@@ -87,7 +86,7 @@ class Game extends Component {
   render() {
     return (
       <div>
-        <Top messages={this.state.messages} />
+        <Top message={this.state.message} />
         <div className="game">
           <Map map={this.generate()} />
           <Side player={this.state.player} />
@@ -123,19 +122,50 @@ class Game extends Component {
         let newState = Object.assign({}, this.state.player);
         newState.position = newPos;
         this.setState({
-          player: newState
+          player: newState,
+          message: ''
         });
+      } else {
+        this.fight(newPos);
       }
     }
   }
   start = () => {
-    this.generateWall();
     this.generateEnemy();
+  }
+  fight = (loc) => {
+    let message = '';
+    let map = Object.assign({}, this.state.map);
+    
+    let playerStat = Object.assign({}, this.state.player);
+    let enemyStat = Object.assign({}, this.state.enemy);
+    
+    let playerAttack = playerStat.level*playerStat.weapon;
+    let enemyAttack = enemyStat[loc].level*this.props.setting.attack;
+    
+    playerStat.hp -= enemyAttack;
+    enemyStat[loc].hp -= playerAttack;
+    
+    if (playerStat.hp <= 0) {
+      alert("Game Over"); 
+    } else if (enemyStat[loc].hp <=0) {
+      let expUp = enemyStat[loc].level*10;
+      playerStat.exp += expUp;
+      map[loc] = 'default';
+      playerStat.position = loc;
+      message = 'Enemy defeated... EXP gained: ' + expUp;
+    } 
+    
+    this.setState({
+      map: map,
+      player: playerStat,
+      enemy: enemyStat,
+      message: message
+    });
   }
   generate = () => {
     console.log('generate board');
     let map = Object.assign({}, this.state.map);
-
     //insert player
     map[this.state.player.position] = 'player';
     let render = [];
@@ -155,8 +185,9 @@ class Game extends Component {
   }
   generateEnemy = () => {
     console.log('generate enemy');
-    const enemyCount = this.props.setting.enemy;
+    const enemyCount = this.props.setting.count;
     let position = {};
+    let stats = {};
     for (let i=0; i<enemyCount; i++) {
       let minX = parseInt(config.x/enemyCount*(i), 10);
       let maxX = parseInt(config.x/enemyCount*(i+1), 10);
@@ -168,9 +199,15 @@ class Game extends Component {
         x = parseInt((maxX-minX)*Math.random()+minX, 10);
         y = parseInt((maxY-minY)*Math.random()+minY, 10);
         pos = x + 'x' + y;
-        if (this.state.map[pos] === 'default') { valid = true; }
+        if (this.state.map[pos] === 'default' && pos !== this.state.player.position) { 
+          valid = true; 
+        }
       }
       position[pos] = 'enemy';
+      stats[pos] = {
+        level: 1,
+        hp: 10
+      };
     }
 
     position[this.state.boss.position] = 'boss';
@@ -178,16 +215,8 @@ class Game extends Component {
     let newMap = Object.assign(this.state.map, position);
 
     this.setState({
-      map: newMap
-    });
-  }
-  generateWall = () => {
-    let wallObj = {};
-    this.state.wall.forEach((position) => {
-      wallObj[position] = 'wall';
-    });
-    this.setState({
-      map: Object.assign(this.state.map, wallObj)
+      map: newMap,
+      enemy: stats
     });
   }
   update = (val, target) => {
@@ -242,9 +271,7 @@ class Top extends Component {
   render() {
     return (
       <div className="top">
-        {this.props.messages.map((item) => {
-          return <p>{item}</p>;
-        })}
+        <p>{this.props.message}</p>
       </div>
     );
   }
