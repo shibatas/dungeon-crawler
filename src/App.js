@@ -130,13 +130,11 @@ class Game extends Component {
       switch (this.state.map[newPos]) {
         case 'wall':
           return;
-          break;
         case 'enemy':
         case 'boss':
           console.log('fight', this.state.stats[newPos]);
           this.fight(newPos);
           return;
-          break;
         case 'health':
           console.log('health', oldState.stats[newPos].hpUp);
           let upgradeHp = oldState.stats[newPos].hpUp;
