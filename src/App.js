@@ -58,6 +58,7 @@ class Game extends Component {
   constructor(props) {
     super(props);
     this.state = ({
+      mapLevel: 0,
       map: config.initMap,
       wall: config.map[config.defaultLevel].wall,
       player: {
@@ -68,10 +69,6 @@ class Game extends Component {
         weapon: 1
       },
       stats: {},
-      boss: {
-        position: config.map[config.defaultLevel].boss,
-        hp: 100
-      },
       message: 'Click BEGIN to start!'
     });
   }
@@ -84,7 +81,7 @@ class Game extends Component {
     }
   }
   componentWillUpdate() {
-    //console.log(this.state.stats);
+    //console.log(this.state.map);
   }
   render() {
     return (
@@ -128,6 +125,7 @@ class Game extends Component {
         case 'wall':
           return;
         case 'enemy':
+        case 'boss':
           console.log('fight', this.state.stats[newPos]);
           this.fight(newPos);
           return;
@@ -171,7 +169,7 @@ class Game extends Component {
     let oldState = Object.assign({}, this.state)
     let newState = this.generateContents(oldState);
 
-    newState.map[this.state.boss.position] = 'boss';
+    
 
     this.setState(newState);
   }
@@ -188,10 +186,10 @@ class Game extends Component {
     let playerDefense = 1-(playerStat.level/10 + playerStat.weapon/20);
     let enemyAttack = Math.round(enemyStat[loc].level*this.props.setting.attack*playerDefense);
 
-    //randomize
+    // randomize
     playerAttack = this.randomize(playerAttack, 0.1);
     enemyAttack = this.randomize(enemyAttack, 0.1);
-    console.log(playerAttack,enemyAttack);
+
     playerStat.hp -= enemyAttack;
     enemyStat[loc].hp -= playerAttack;
 
@@ -200,17 +198,19 @@ class Game extends Component {
     } else if (enemyStat[loc].hp <=0) {
       let expUp = enemyStat[loc].level*20;
       playerStat.exp += expUp;
-      map[loc] = 'default';
-      playerStat.position = loc;
-      if (playerStat.exp >= 100) {
+      if (map[loc] === 'boss') {
+        alert('Boss defeated!');
+      } else if (playerStat.exp >= 100) {
         playerStat.exp = 0;
         playerStat.level++;
         message = 'Enemy defeated... Level Up!';
       } else {
         message = 'Enemy defeated... EXP gained: ' + expUp;
       }
+      map[loc] = 'default';
+      playerStat.position = loc;
     }
-
+    console.log('player: ', playerStat.hp, 'enemy: ', enemyStat[loc].hp);
     this.setState({
       map: map,
       player: playerStat,
@@ -292,6 +292,14 @@ class Game extends Component {
       }
       newMap = Object.assign(newMap, updates);
     });
+
+    console.log(this.state.mapLevel.boss);
+
+    newMap[config.map[this.state.mapLevel].boss] = 'boss';
+    stats[config.map[this.state.mapLevel].boss] = {
+      level: 3,
+      hp: 100
+    }
 
     let output = {
       map: newMap,

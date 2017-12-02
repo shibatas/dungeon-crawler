@@ -1,22 +1,23 @@
-//number of blocks
-const x = 60, y = 40;
-//map width
+// number of blocks
+const x = 60;
+const y = 40;
+// map width
 const mapWidth = 800;
-//block size
+// block size
 const w = mapWidth / x;
 const h = w;
-//height of map area
+// height of map area
 const mapHeight = y*h;
 const defaultLevel = 0;
-//initial state of the board (empty board)
+// initial state of the board (empty board)
 let initMap = {};
 for (let j=0; j<y; j++) {
   for (let i=0; i<x; i++) {
-    initMap[i+'x'+j] = "default";
+    initMap[i+'x'+j] = 'default';
   }
 }
 
-//let noWall = [];
+// let noWall = [];
 let map = [{
   wall: [
   "23x12",
@@ -843,7 +844,7 @@ let initPos = parseInt(x/2,10) + "x" + parseInt(y/2,10);
 let level = {
   easy: {
     count: 8,
-    attack: 10
+    attack: 10,
   },
   medium: {
     count: 12,
