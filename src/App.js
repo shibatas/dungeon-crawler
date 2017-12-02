@@ -194,11 +194,17 @@ class Game extends Component {
     if (playerStat.hp <= 0) {
       alert("Game Over");
     } else if (enemyStat[loc].hp <=0) {
-      let expUp = enemyStat[loc].level*10;
+      let expUp = enemyStat[loc].level*20;
       playerStat.exp += expUp;
       map[loc] = 'default';
       playerStat.position = loc;
-      message = 'Enemy defeated... EXP gained: ' + expUp;
+      if (playerStat.exp >= 100) {
+        playerStat.exp = 0;
+        playerStat.level++;
+        message = 'Enemy defeated... Level Up!';
+      } else {
+        message = 'Enemy defeated... EXP gained: ' + expUp;
+      }
     }
 
     this.setState({
