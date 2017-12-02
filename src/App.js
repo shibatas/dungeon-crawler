@@ -43,13 +43,27 @@ class App extends Component {
     return (
       <div className="App">
         <Game gameState={this.state.gameState} setting={this.state.setting} />
-        <button onClick={this.start}>Begin</button>
+        <button id='start' onClick={this.handleClick}>Begin</button>
+        <button id='reset' onClick={this.handleClick}>Reset</button>
       </div>
     );
   }
-  start = () => {
+  handleClick = (e) => {
+    let newState = '';
+    switch (e.target.id) {
+      case 'start':
+        newState = 'run';
+        break;
+      case 'reset':
+        newState = 'reset';
+        break;
+      case 'pause':
+        newState = 'paused';
+        break;
+      default: return;
+    }
     this.setState({
-      gameState: 'run'
+      gameState: newState
     })
   }
 }
@@ -57,20 +71,7 @@ class App extends Component {
 class Game extends Component {
   constructor(props) {
     super(props);
-    this.state = ({
-      mapLevel: 0,
-      map: config.initMap,
-      wall: config.map[config.defaultLevel].wall,
-      player: {
-        position: config.player,
-        hp: 100,
-        exp: 0,
-        level: 1,
-        weapon: 1
-      },
-      stats: {},
-      message: 'Click BEGIN to start!'
-    });
+    this.state = Object.assign({}, config.initState);
   }
   componentWillMount() {
     document.addEventListener("keydown", this.handleKeyDown);
@@ -78,10 +79,12 @@ class Game extends Component {
   componentWillReceiveProps(nextProps) {
     if (this.props.gameState !== nextProps.gameState && nextProps.gameState === 'run') {
       this.start();
+    } else if (nextProps.gameState === 'reset') {
+      this.reset();
     }
   }
   componentWillUpdate() {
-    //console.log(this.state.map);
+    //console.log(config.initState.player.position);
   }
   render() {
     return (
@@ -95,12 +98,14 @@ class Game extends Component {
     );
   }
   handleClick = (e) => {
-    let target = e.target.id;
-    this.update('wall', target);
+    // below for clicking to add wall in dev mode
+    //let target = e.target.id;
+    //this.update('wall', target);
   }
   handleKeyDown = (e) => {
     //tip on held down key https://forum.freecodecamp.org/t/dungeon-crawler-feedback-please/43394/11
-    let curPos = this.state.player.position.split('x');
+    let player = Object.assign({}, this.state.player);
+    let curPos = player.position.split('x');
     let xPos = parseInt(curPos[0], 10), yPos = parseInt(curPos[1], 10);
     let newPos = curPos;
     switch (e.key) {
@@ -116,9 +121,10 @@ class Game extends Component {
     }
 
     let oldState = Object.assign({}, this.state);
-    let newStatePlayer = oldState.player;
+    let newStatePlayer = Object.assign({}, oldState.player);
     let newStateMap = oldState.map;
     let newStateStats = oldState.stats;
+
     if (xPos < config.x && xPos >= 0 && yPos < config.y && yPos >=0) {
       newPos = xPos.toString() + 'x' + yPos.toString();
       switch (this.state.map[newPos]) {
@@ -158,7 +164,7 @@ class Game extends Component {
           })
           break;
         default: 
-          newStatePlayer.position = newPos;
+          newStatePlayer.position = newPos;               
           this.setState({
             player: newStatePlayer
           })
@@ -169,8 +175,11 @@ class Game extends Component {
     let oldState = Object.assign({}, this.state)
     let newState = this.generateContents(oldState);
 
-    
-
+    this.setState(newState);
+  }
+  reset = () => {
+    console.log('reset');
+    let newState = Object.assign({}, config.initState);
     this.setState(newState);
   }
   fight = (loc) => {
@@ -179,8 +188,6 @@ class Game extends Component {
 
     let playerStat = Object.assign({}, this.state.player);
     let enemyStat = Object.assign({}, this.state.stats);
-
-    console.log(enemyStat);
 
     let playerAttack = 10*playerStat.level*(1+playerStat.weapon/10);
     let playerDefense = 1-(playerStat.level/10 + playerStat.weapon/20);
@@ -195,11 +202,15 @@ class Game extends Component {
 
     if (playerStat.hp <= 0) {
       alert("Game Over");
+      this.reset();
+      return;
     } else if (enemyStat[loc].hp <=0) {
       let expUp = enemyStat[loc].level*20;
       playerStat.exp += expUp;
       if (map[loc] === 'boss') {
         alert('Boss defeated!');
+        this.reset();
+        return;
       } else if (playerStat.exp >= 100) {
         playerStat.exp = 0;
         playerStat.level++;
@@ -209,8 +220,9 @@ class Game extends Component {
       }
       map[loc] = 'default';
       playerStat.position = loc;
+    } else {
+      message = 'Enemy HP remaining: ' + enemyStat[loc].hp;
     }
-    console.log('player: ', playerStat.hp, 'enemy: ', enemyStat[loc].hp);
     this.setState({
       map: map,
       player: playerStat,
@@ -248,7 +260,7 @@ class Game extends Component {
     let types = ['enemy', 'health', 'weapon'];
     let counts = [this.props.setting.count, 10, 5];
 
-    let newMap = oldState.map;
+    let newMap = Object.assign({}, oldState.map);
     let stats = {};
 
     types.forEach((type, index) => {
