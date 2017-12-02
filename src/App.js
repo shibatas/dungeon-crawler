@@ -188,6 +188,10 @@ class Game extends Component {
     let playerDefense = 1-(playerStat.level/10 + playerStat.weapon/20);
     let enemyAttack = Math.round(enemyStat[loc].level*this.props.setting.attack*playerDefense);
 
+    //randomize
+    playerAttack = this.randomize(playerAttack, 0.1);
+    enemyAttack = this.randomize(enemyAttack, 0.1);
+    console.log(playerAttack,enemyAttack);
     playerStat.hp -= enemyAttack;
     enemyStat[loc].hp -= playerAttack;
 
@@ -213,6 +217,11 @@ class Game extends Component {
       stats: enemyStat,
       message: message
     });
+  }
+  randomize = (num, range) => {
+    let max = num + num*range;
+    let min = num - num*range;
+    return Math.round(Math.random()*(max-min)+min);
   }
   generate = () => {
     console.log('generate map');
