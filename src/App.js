@@ -3,6 +3,9 @@ import Footer from './assets/footer';
 import './App.css';
 import { config } from './config.js';
 
+const hpUp = 20;
+const weaponUp = 1;
+
 class Parent extends Component {
   render() {
     return (
@@ -40,13 +43,27 @@ class App extends Component {
     return (
       <div className="App">
         <Game gameState={this.state.gameState} setting={this.state.setting} />
-        <button onClick={this.start}>Begin</button>
+        <button id='start' onClick={this.handleClick}>Begin</button>
+        <button id='reset' onClick={this.handleClick}>Reset</button>
       </div>
     );
   }
-  start = () => {
+  handleClick = (e) => {
+    let newState = '';
+    switch (e.target.id) {
+      case 'start':
+        newState = 'run';
+        break;
+      case 'reset':
+        newState = 'reset';
+        break;
+      case 'pause':
+        newState = 'paused';
+        break;
+      default: return;
+    }
     this.setState({
-      gameState: 'run'
+      gameState: newState
     })
   }
 }
@@ -54,40 +71,25 @@ class App extends Component {
 class Game extends Component {
   constructor(props) {
     super(props);
-    this.state = ({
-      map: config.emptyMap,
-      wall: config.map[config.defaultLevel].wall,
-      player: {
-        position: config.player,
-        hp: 100,
-        exp: 0,
-        weapon: 10
-      },
-      enemy: {
-        position: null
-      },
-      boss: {
-        position: config.map[config.defaultLevel].boss
-      },
-      messages: ['Click BEGIN to start!']
-    });
+    this.state = Object.assign({}, config.initState);
   }
   componentWillMount() {
-    this.generateWall();
     document.addEventListener("keydown", this.handleKeyDown);
   }
   componentWillReceiveProps(nextProps) {
     if (this.props.gameState !== nextProps.gameState && nextProps.gameState === 'run') {
-      this.generateEnemy();
+      this.start();
+    } else if (nextProps.gameState === 'reset') {
+      this.reset();
     }
   }
   componentWillUpdate() {
-    //console.log(this.state);
+    //console.log(config.initState.player.position);
   }
   render() {
     return (
       <div>
-        <Top messages={this.state.messages} />
+        <Top message={this.state.message} />
         <div className="game">
           <Map map={this.generate()} />
           <Side player={this.state.player} />
@@ -96,12 +98,14 @@ class Game extends Component {
     );
   }
   handleClick = (e) => {
-    let target = e.target.id;
-    this.update('wall', target);
+    // below for clicking to add wall in dev mode
+    //let target = e.target.id;
+    //this.update('wall', target);
   }
   handleKeyDown = (e) => {
     //tip on held down key https://forum.freecodecamp.org/t/dungeon-crawler-feedback-please/43394/11
-    let curPos = this.state.player.position.split('x');
+    let player = Object.assign({}, this.state.player);
+    let curPos = player.position.split('x');
     let xPos = parseInt(curPos[0], 10), yPos = parseInt(curPos[1], 10);
     let newPos = curPos;
     switch (e.key) {
@@ -113,29 +117,129 @@ class Game extends Component {
         break;
       case 'ArrowLeft': xPos--;
         break;
-      default: break;
+      default: return;
     }
+
+    let oldState = Object.assign({}, this.state);
+    let newStatePlayer = Object.assign({}, oldState.player);
+    let newStateMap = oldState.map;
+    let newStateStats = oldState.stats;
 
     if (xPos < config.x && xPos >= 0 && yPos < config.y && yPos >=0) {
       newPos = xPos.toString() + 'x' + yPos.toString();
-      let target = this.state.map[newPos];
-      if (target.match(/^(default|weapon|health)$/)) {
-        let newState = Object.assign({}, this.state.player);
-        newState.position = newPos;
-        this.setState({
-          player: newState
-        });
+      switch (this.state.map[newPos]) {
+        case 'wall':
+          return;
+          break;
+        case 'enemy':
+        case 'boss':
+          console.log('fight', this.state.stats[newPos]);
+          this.fight(newPos);
+          return;
+          break;
+        case 'health':
+          console.log('health', oldState.stats[newPos].hpUp);
+          let upgradeHp = oldState.stats[newPos].hpUp;
+          newStatePlayer.position = newPos;
+          newStatePlayer.hp = oldState.player.hp + upgradeHp;
+          newStateMap[newPos] = 'default';
+          newStateStats[newPos] = {};
+          this.setState({
+            map: newStateMap,
+            player: newStatePlayer,
+            stats: newStateStats,
+            message: 'HP +' + upgradeHp
+          })
+          break;
+        case 'weapon':
+          console.log('weapon', oldState.stats[newPos].weaponUp);
+          let upgradeW = oldState.stats[newPos].weaponUp;
+          newStatePlayer.position = newPos;
+          newStatePlayer.weapon = oldState.player.weapon + upgradeW;
+          newStateMap[newPos] = 'default';
+          newStateStats[newPos] = {};
+          this.setState({
+            map: newStateMap,
+            player: newStatePlayer,
+            stats: newStateStats,            
+            message: 'Weapon +' + upgradeW
+          })
+          break;
+        default: 
+          newStatePlayer.position = newPos;               
+          this.setState({
+            player: newStatePlayer
+          })
       }
     }
   }
   start = () => {
-    this.generateWall();
-    this.generateEnemy();
+    let oldState = Object.assign({}, this.state)
+    let newState = this.generateContents(oldState);
+
+    this.setState(newState);
   }
-  generate = () => {
-    console.log('generate board');
+  reset = () => {
+    console.log('reset');
+    let newState = Object.assign({}, config.initState);
+    this.setState(newState);
+  }
+  fight = (loc) => {
+    let message = '';
     let map = Object.assign({}, this.state.map);
 
+    let playerStat = Object.assign({}, this.state.player);
+    let enemyStat = Object.assign({}, this.state.stats);
+
+    let playerAttack = 10*playerStat.level*(1+playerStat.weapon/10);
+    let playerDefense = 1-(playerStat.level/10 + playerStat.weapon/20);
+    let enemyAttack = Math.round(enemyStat[loc].level*this.props.setting.attack*playerDefense);
+
+    // randomize
+    playerAttack = this.randomize(playerAttack, 0.1);
+    enemyAttack = this.randomize(enemyAttack, 0.1);
+
+    playerStat.hp -= enemyAttack;
+    enemyStat[loc].hp -= playerAttack;
+
+    if (playerStat.hp <= 0) {
+      alert("Game Over");
+      this.reset();
+      return;
+    } else if (enemyStat[loc].hp <=0) {
+      let expUp = enemyStat[loc].level*20;
+      playerStat.exp += expUp;
+      if (map[loc] === 'boss') {
+        alert('Boss defeated!');
+        this.reset();
+        return;
+      } else if (playerStat.exp >= 100) {
+        playerStat.exp = 0;
+        playerStat.level++;
+        message = 'Enemy defeated... Level Up!';
+      } else {
+        message = 'Enemy defeated... EXP gained: ' + expUp;
+      }
+      map[loc] = 'default';
+      playerStat.position = loc;
+    } else {
+      message = 'Enemy HP remaining: ' + enemyStat[loc].hp;
+    }
+    this.setState({
+      map: map,
+      player: playerStat,
+      stats: enemyStat,
+      message: message
+    });
+  }
+  randomize = (num, range) => {
+    let max = num + num*range;
+    let min = num - num*range;
+    return Math.round(Math.random()*(max-min)+min);
+  }
+  generate = () => {
+    console.log('generate map');
+    let map = Object.assign({}, this.state.map);
     //insert player
     map[this.state.player.position] = 'player';
     let render = [];
@@ -153,42 +257,70 @@ class Game extends Component {
     }
     return render;
   }
-  generateEnemy = () => {
-    console.log('generate enemy');
-    const enemyCount = this.props.setting.enemy;
-    let position = {};
-    for (let i=0; i<enemyCount; i++) {
-      let minX = parseInt(config.x/enemyCount*(i), 10);
-      let maxX = parseInt(config.x/enemyCount*(i+1), 10);
-      let minY = 0;
-      let maxY = config.y;
-      let x, y, pos;
-      let valid = false;
-      while (!valid) {
-        x = parseInt((maxX-minX)*Math.random()+minX, 10);
-        y = parseInt((maxY-minY)*Math.random()+minY, 10);
-        pos = x + 'x' + y;
-        if (this.state.map[pos] === 'default') { valid = true; }
+  generateContents = (oldState) => {
+    console.log('generate contents');
+    let types = ['enemy', 'health', 'weapon'];
+    let counts = [this.props.setting.count, 10, 5];
+
+    let newMap = Object.assign({}, oldState.map);
+    let stats = {};
+
+    types.forEach((type, index) => {
+      let updates = {};
+      let count = counts[index];
+      for (let i=0; i<count; i++) {
+        let minX = parseInt(config.x/count*(i), 10);
+        let maxX = parseInt(config.x/count*(i+1), 10);
+        let minY = 0;
+        let maxY = config.y;
+        let x, y, pos;
+        let valid = false;
+        while (!valid) {
+          x = parseInt((maxX-minX)*Math.random()+minX, 10);
+          y = parseInt((maxY-minY)*Math.random()+minY, 10);
+          pos = x + 'x' + y;
+          if (this.state.map[pos] === 'default' && pos !== this.state.player.position) {
+            valid = true;
+          }
+        }
+        updates[pos] = type;
+
+        switch (type) {
+          case 'enemy':
+            stats[pos] = {
+              level: 1,
+              hp: 10
+            };
+            break;
+          case 'health':
+            stats[pos] = { hpUp: hpUp }
+            break;
+          case 'weapon':
+            stats[pos] = { weaponUp: weaponUp }
+            break;
+          default: 
+        }
+        if (type === 'enemy') {
+          
+        }
       }
-      position[pos] = 'enemy';
+      newMap = Object.assign(newMap, updates);
+    });
+
+    console.log(this.state.mapLevel.boss);
+
+    newMap[config.map[this.state.mapLevel].boss] = 'boss';
+    stats[config.map[this.state.mapLevel].boss] = {
+      level: 3,
+      hp: 100
     }
 
-    position[this.state.boss.position] = 'boss';
+    let output = {
+      map: newMap,
+      stats: stats
+    }
 
-    let newMap = Object.assign(this.state.map, position);
-
-    this.setState({
-      map: newMap
-    });
-  }
-  generateWall = () => {
-    let wallObj = {};
-    this.state.wall.forEach((position) => {
-      wallObj[position] = 'wall';
-    });
-    this.setState({
-      map: Object.assign(this.state.map, wallObj)
-    });
+    return output;
   }
   update = (val, target) => {
     console.log('update', target);
@@ -229,6 +361,8 @@ class Side extends Component {
       <div className="side" style={{height: config.mapHeight}} >
         <h3>HP</h3>
         <p>{this.props.player.hp}</p>
+        <h3>Level</h3>
+        <p>{this.props.player.level}</p>
         <h3>Exp</h3>
         <p>{this.props.player.exp}</p>
         <h3>Weapon</h3>
@@ -242,9 +376,7 @@ class Top extends Component {
   render() {
     return (
       <div className="top">
-        {this.props.messages.map((item) => {
-          return <p>{item}</p>;
-        })}
+        <p>{this.props.message}</p>
       </div>
     );
   }

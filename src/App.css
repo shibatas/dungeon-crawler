@@ -67,7 +67,16 @@ footer {
   box-shadow: 2px 2px 1px black;
   border-radius: 50%;
 }
-
+.health {
+  background-color: pink;
+  box-shadow: 2px 2px 1px black;
+  border-radius: 50%;
+}
+.weapon {
+  background-color: blue;
+  box-shadow: 2px 2px 1px black;
+  border-radius: 50%;
+}
 /* Side Box */
 .side {
   width: 100px;
@@ -75,6 +84,6 @@ footer {
 }
 
 .top {
-  height: auto;
+  height: 20px;
   width: 100%;
 }
