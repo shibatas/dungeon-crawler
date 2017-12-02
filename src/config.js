@@ -863,6 +863,21 @@ let style = {
   height: h
 };
 
+const initState = ({
+  mapLevel: 0,
+  map: initMap,
+  wall: map[defaultLevel].wall,
+  player: {
+    position: initPos,
+    hp: 100,
+    exp: 0,
+    level: 1,
+    weapon: 1
+  },
+  stats: {},
+  message: 'Click BEGIN to start!'
+});
+
 let config = {
   x: x,
   y: y,
@@ -875,8 +890,8 @@ let config = {
     0: map[0]
   },
   defaultLevel: 0,
-  player: initPos,
   level: level,
-  style: style
+  style: style,
+  initState: initState
 };
 export {config};
