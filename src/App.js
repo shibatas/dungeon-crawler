@@ -3,6 +3,9 @@ import Footer from './assets/footer';
 import './App.css';
 import { config } from './config.js';
 
+const hpUp = 20;
+const weaponUp = 1;
+
 class Parent extends Component {
   render() {
     return (
@@ -62,9 +65,9 @@ class Game extends Component {
         hp: 100,
         exp: 0,
         level: 1,
-        weapon: 10
+        weapon: 1
       },
-      enemy: {},
+      stats: {},
       boss: {
         position: config.map[config.defaultLevel].boss,
         hp: 100
@@ -81,7 +84,7 @@ class Game extends Component {
     }
   }
   componentWillUpdate() {
-    //console.log(this.state.enemy);
+    //console.log(this.state.stats);
   }
   render() {
     return (
@@ -112,21 +115,55 @@ class Game extends Component {
         break;
       case 'ArrowLeft': xPos--;
         break;
-      default: break;
+      default: return;
     }
 
+    let oldState = Object.assign({}, this.state);
+    let newStatePlayer = oldState.player;
+    let newStateMap = oldState.map;
+    let newStateStats = oldState.stats;
     if (xPos < config.x && xPos >= 0 && yPos < config.y && yPos >=0) {
       newPos = xPos.toString() + 'x' + yPos.toString();
-      let target = this.state.map[newPos];
-      if (target.match(/^(default|weapon|health)$/)) {
-        let newState = Object.assign({}, this.state.player);
-        newState.position = newPos;
-        this.setState({
-          player: newState,
-          message: ''
-        });
-      } else {
-        this.fight(newPos);
+      switch (this.state.map[newPos]) {
+        case 'wall':
+          return;
+        case 'enemy':
+          console.log('fight', this.state.stats[newPos]);
+          this.fight(newPos);
+          return;
+        case 'health':
+          console.log('health', oldState.stats[newPos].hpUp);
+          let upgradeHp = oldState.stats[newPos].hpUp;
+          newStatePlayer.position = newPos;
+          newStatePlayer.hp = oldState.player.hp + upgradeHp;
+          newStateMap[newPos] = 'default';
+          newStateStats[newPos] = {};
+          this.setState({
+            map: newStateMap,
+            player: newStatePlayer,
+            stats: newStateStats,
+            message: 'HP +' + upgradeHp
+          })
+          break;
+        case 'weapon':
+          console.log('weapon', oldState.stats[newPos].weaponUp);
+          let upgradeW = oldState.stats[newPos].weaponUp;
+          newStatePlayer.position = newPos;
+          newStatePlayer.weapon = oldState.player.weapon + upgradeW;
+          newStateMap[newPos] = 'default';
+          newStateStats[newPos] = {};
+          this.setState({
+            map: newStateMap,
+            player: newStatePlayer,
+            stats: newStateStats,            
+            message: 'Weapon +' + upgradeW
+          })
+          break;
+        default: 
+          newStatePlayer.position = newPos;
+          this.setState({
+            player: newStatePlayer
+          })
       }
     }
   }
@@ -143,12 +180,13 @@ class Game extends Component {
     let map = Object.assign({}, this.state.map);
 
     let playerStat = Object.assign({}, this.state.player);
-    let enemyStat = Object.assign({}, this.state.enemy);
+    let enemyStat = Object.assign({}, this.state.stats);
 
     console.log(enemyStat);
 
-    let playerAttack = playerStat.level*playerStat.weapon;
-    let enemyAttack = enemyStat[loc].level*this.props.setting.attack;
+    let playerAttack = 10*playerStat.level*(1+playerStat.weapon/10);
+    let playerDefense = 1-(playerStat.level/10 + playerStat.weapon/20);
+    let enemyAttack = Math.round(enemyStat[loc].level*this.props.setting.attack*playerDefense);
 
     playerStat.hp -= enemyAttack;
     enemyStat[loc].hp -= playerAttack;
@@ -166,12 +204,12 @@ class Game extends Component {
     this.setState({
       map: map,
       player: playerStat,
-      enemy: enemyStat,
+      stats: enemyStat,
       message: message
     });
   }
   generate = () => {
-    console.log('generate board');
+    console.log('generate map');
     let map = Object.assign({}, this.state.map);
     //insert player
     map[this.state.player.position] = 'player';
@@ -218,11 +256,23 @@ class Game extends Component {
         }
         updates[pos] = type;
 
+        switch (type) {
+          case 'enemy':
+            stats[pos] = {
+              level: 1,
+              hp: 10
+            };
+            break;
+          case 'health':
+            stats[pos] = { hpUp: hpUp }
+            break;
+          case 'weapon':
+            stats[pos] = { weaponUp: weaponUp }
+            break;
+          default: 
+        }
         if (type === 'enemy') {
-          stats[pos] = {
-            level: 1,
-            hp: 10
-          };
+          
         }
       }
       newMap = Object.assign(newMap, updates);
@@ -230,7 +280,7 @@ class Game extends Component {
 
     let output = {
       map: newMap,
-      enemy: stats
+      stats: stats
     }
 
     return output;
@@ -274,6 +324,8 @@ class Side extends Component {
       <div className="side" style={{height: config.mapHeight}} >
         <h3>HP</h3>
         <p>{this.props.player.hp}</p>
+        <h3>Level</h3>
+        <p>{this.props.player.level}</p>
         <h3>Exp</h3>
         <p>{this.props.player.exp}</p>
         <h3>Weapon</h3>
