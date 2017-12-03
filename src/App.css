@@ -1,9 +1,11 @@
 html {
   background-color: #d3d3d3;
+  height: 100%
 }
 
 body {
   height: 100%;
+  overflow: hidden;
   margin: 0;
 }
 
@@ -35,7 +37,8 @@ footer {
 /* Game Area */
 .game {
   margin-bottom: 50px;
-  height: auto;
+  padding: 30px;
+  height: 450px;
   display: flex;
   justify-content: center;
 }
@@ -48,25 +51,31 @@ footer {
 .default {
   opacity: 0;
 }
+.shadow {
+  background-color: #222;
+  box-shadow: 0 0 10px #222;
+}
 .wall {
-  background-color: black;
+  background-color: gray;
   box-shadow: 1px 1px 1px black;
 }
 .player {
-  background-color: green;
-  box-shadow: 2px 2px 1px black;
-  border-radius: 50%;
+  vertical-align: top;
+  font-size: 1.7em;
+  font-weight: bold;
+  color: green;
+  text-shadow: 0.5px 0.5px 0.5px black;
 }
 .enemy {
   vertical-align: top;
-  font-size: 0.7em;
+  font-size: 1.7em;
   font-weight: bold;
   color: orange;
   text-shadow: 0.5px 0.5px 0.5px black;
 }
 .boss {
   vertical-align: top;
-  font-size: .7em;
+  font-size: 1.7em;
   font-weight: bold;
   border-radius: 50%;
   color: red;
@@ -74,14 +83,14 @@ footer {
 }
 .health {
   vertical-align: top;
-  font-size: 0.7em;
+  font-size: 1.7em;
   font-weight: bold;
   color: red;
   text-shadow: 0.5px 0.5px 0.5px black;
 }
 .weapon {
   vertical-align: top;
-  font-size: 0.7em;
+  font-size: 1.7em;
   font-weight: bold;
   color: blue;
   text-shadow: 0.5px 0.5px 0.5px black;

@@ -4,8 +4,8 @@ const y = 40;
 // map width
 const mapWidth = 800;
 // block size
-const w = mapWidth / x;
-const h = w;
+const w = 30;
+const h = 30;
 // height of map area
 const mapHeight = y*h;
 const defaultLevel = 0;

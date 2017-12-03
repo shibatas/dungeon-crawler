@@ -174,6 +174,7 @@ class Game extends Component {
   start = () => {
     let oldState = Object.assign({}, this.state)
     let newState = this.generateContents(oldState);
+    newState.message = 'Move with your arrow keys.';
 
     this.setState(newState);
   }
@@ -238,18 +239,30 @@ class Game extends Component {
   generate = () => {
     console.log('generate map');
     let map = Object.assign({}, this.state.map);
+    let player = Object.assign({}, this.state.player);
     //insert player
-    map[this.state.player.position] = 'player';
+    map[player.position] = 'player';
+    
+    const playerCoordinate = player.position.split('x');
+    const range = 8; // number of blocks in view, to each direction
+    const rangeX = [parseInt(playerCoordinate[0])-range, parseInt(playerCoordinate[0])+range+1];
+    const rangeY = [parseInt(playerCoordinate[1])-range, parseInt(playerCoordinate[1])+range+1];
+
     let render = [];
-    for (let j=0; j<config.y; j++) {
+    for (let j=rangeY[0]; j<rangeY[1]; j++) {
       let row = [];
-      for (let i=0; i<config.x; i++) {
+      for (let i=rangeX[0]; i<rangeX[1]; i++) {
         let pos = i+'x'+j;
         let emoji = '';
         switch (map[pos]) {
+          case 'player':
+            emoji = <span role="img" aria-label="player">&#128512;</span>;
+            break;
           case 'enemy':
-          case 'boss':
             emoji = <span role="img" aria-label="enemy">&#128127;</span>;
+            break;
+          case 'boss':
+            emoji = <span role="img" aria-label="enemy">&#128121;</span>;
             break;
           case 'weapon':
             emoji = <span role="img" aria-label="weapon">&#9876;</span>;
@@ -259,8 +272,14 @@ class Game extends Component {
             break;
           default: break;
         } 
+        let className = map[pos];
+        let distance = Math.round(Math.pow(Math.pow(i-playerCoordinate[0],2)+Math.pow(j-playerCoordinate[1],2),0.5));
+        if (distance > 7) {
+          className = 'shadow';
+          emoji = '';
+        }
         row.push(
-          <span key={pos} id={pos} style={config.style} className={map[pos]} onClick={this.handleClick} >{emoji}</span>
+          <span key={pos} id={pos} style={config.style} className={className} onClick={this.handleClick} >{emoji}</span>
         );
       }
       render.push(
