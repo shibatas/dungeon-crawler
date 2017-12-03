@@ -58,24 +58,33 @@ footer {
   border-radius: 50%;
 }
 .enemy {
-  background-color: orange;
-  box-shadow: 2px 2px 1px black;
-  border-radius: 50%;
+  vertical-align: top;
+  font-size: 0.7em;
+  font-weight: bold;
+  color: orange;
+  text-shadow: 0.5px 0.5px 0.5px black;
 }
 .boss {
-  background-color: red;
-  box-shadow: 2px 2px 1px black;
+  vertical-align: top;
+  font-size: .7em;
+  font-weight: bold;
   border-radius: 50%;
+  color: red;
+  text-shadow: 0.5px 0.5px 0.5px black;
 }
 .health {
-  background-color: pink;
-  box-shadow: 2px 2px 1px black;
-  border-radius: 50%;
+  vertical-align: top;
+  font-size: 0.7em;
+  font-weight: bold;
+  color: red;
+  text-shadow: 0.5px 0.5px 0.5px black;
 }
 .weapon {
-  background-color: blue;
-  box-shadow: 2px 2px 1px black;
-  border-radius: 50%;
+  vertical-align: top;
+  font-size: 0.7em;
+  font-weight: bold;
+  color: blue;
+  text-shadow: 0.5px 0.5px 0.5px black;
 }
 /* Side Box */
 .side {
