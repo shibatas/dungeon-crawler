@@ -1,6 +1,6 @@
 {
-  "short_name": "Dungeon Crawler",
-  "name": "Dungeon Crawler by Shohei Shibata",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
     {
       "src": "favicon.ico",
