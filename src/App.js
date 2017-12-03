@@ -245,8 +245,22 @@ class Game extends Component {
       let row = [];
       for (let i=0; i<config.x; i++) {
         let pos = i+'x'+j;
+        let emoji = '';
+        switch (map[pos]) {
+          case 'enemy':
+          case 'boss':
+            emoji = <span role="img" aria-label="enemy">&#128127;</span>;
+            break;
+          case 'weapon':
+            emoji = <span role="img" aria-label="weapon">&#9876;</span>;
+            break;
+          case 'health':
+            emoji = <span role="img" aria-label="health">&#10010;</span>;
+            break;
+          default: break;
+        } 
         row.push(
-          <span key={pos} id={pos} style={config.style} className={map[pos]} onClick={this.handleClick} ></span>
+          <span key={pos} id={pos} style={config.style} className={map[pos]} onClick={this.handleClick} >{emoji}</span>
         );
       }
       render.push(
