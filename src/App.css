@@ -107,8 +107,6 @@ button {
   font-size: 1em;
   font-weight: bold;
   border-radius: 50%;
-  color: red;
-  text-shadow: 0.5px 0.5px 0.5px black;
 }
 .health {
   vertical-align: top;
