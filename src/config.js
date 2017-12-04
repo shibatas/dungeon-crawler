@@ -4,8 +4,8 @@ const y = 40;
 // map width
 const mapWidth = 800;
 // block size
-const w = 30;
-const h = 30;
+const w = 20;
+const h = 20;
 // height of map area
 const mapHeight = y*h;
 const defaultLevel = 0;
@@ -843,14 +843,17 @@ let initPos = parseInt(x/2,10) + "x" + parseInt(y/2,10);
 
 let level = {
   easy: {
+    name: "Easy",
     count: 8,
     attack: 10,
   },
   medium: {
+    name: "Medium",
     count: 12,
     attack: 15
   },
   hard: {
+    name: "Hard",
     count: 20,
     attack: 20
   }

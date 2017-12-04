@@ -38,7 +38,7 @@ footer {
 .game {
   margin-bottom: 50px;
   padding: 30px;
-  height: 450px;
+  height: 300px;
   display: flex;
   justify-content: center;
 }
@@ -61,21 +61,21 @@ footer {
 }
 .player {
   vertical-align: top;
-  font-size: 1.7em;
+  font-size: 1em;
   font-weight: bold;
   color: green;
   text-shadow: 0.5px 0.5px 0.5px black;
 }
 .enemy {
   vertical-align: top;
-  font-size: 1.7em;
+  font-size: 1em;
   font-weight: bold;
   color: orange;
   text-shadow: 0.5px 0.5px 0.5px black;
 }
 .boss {
   vertical-align: top;
-  font-size: 1.7em;
+  font-size: 1em;
   font-weight: bold;
   border-radius: 50%;
   color: red;
@@ -83,14 +83,14 @@ footer {
 }
 .health {
   vertical-align: top;
-  font-size: 1.7em;
+  font-size: 1em;
   font-weight: bold;
   color: red;
   text-shadow: 0.5px 0.5px 0.5px black;
 }
 .weapon {
   vertical-align: top;
-  font-size: 1.7em;
+  font-size: 1em;
   font-weight: bold;
   color: blue;
   text-shadow: 0.5px 0.5px 0.5px black;
