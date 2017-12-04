@@ -35,16 +35,17 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      gameState: 'paused',
-      setting: config.level.hard
+      gameRunning: false,
+      setting: config.level.easy
     };
   }
   render() {
     return (
       <div className="App">
-        <Game gameState={this.state.gameState} setting={this.state.setting} />
-        <button id='start' onClick={this.handleClick}>Begin</button>
+        <Game gameRunning={this.state.gameRunning} setting={this.state.setting} />
         <button id='reset' onClick={this.handleClick}>Reset</button>
+        <button id='start' onClick={this.handleClick}>Begin</button>
+        <button id='difficulty' disabled={this.state.gameRunning} onClick={this.handleClick}>{this.state.setting.name}</button>
       </div>
     );
   }
@@ -52,39 +53,74 @@ class App extends Component {
     let newState = '';
     switch (e.target.id) {
       case 'start':
-        newState = 'run';
+        newState = true;
         break;
       case 'reset':
-        newState = 'reset';
+        newState = false;
         break;
-      case 'pause':
-        newState = 'paused';
+      case 'difficulty':
+        if (this.state.gameRunning === false) {
+          this.difficultyToggle();
+          newState = false;
+        }
         break;
       default: return;
     }
     this.setState({
-      gameState: newState
+      gameRunning: newState
     })
+  }
+  difficultyToggle = () => {
+    let newState = {};
+    switch (this.state.setting.name) {
+      case 'Easy':
+        newState = config.level.medium;
+        break;
+      case 'Medium':
+        newState = config.level.hard;
+        break;
+      case 'Hard':
+        newState = config.level.easy;
+        break;
+      default:
+    }
+    this.setState({
+      setting: newState
+    });
   }
 }
 
 class Game extends Component {
   constructor(props) {
     super(props);
-    this.state = Object.assign({}, config.initState);
+    this.state = {
+      player: {
+        position: config.initState.player.position,
+        stat: Object.assign({}, config.initState.player.stat)
+      },
+      message: config.initState.message,
+      map: Object.assign({}, config.initState.map),
+      mapLevel: config.defaultLevel,
+      stats: Object.assign({}, config.initState.stats),
+      wall: Object.assign({}, config.initState.wall)
+    };
   }
   componentWillMount() {
+    console.log(this.state);
     document.addEventListener("keydown", this.handleKeyDown);
   }
   componentWillReceiveProps(nextProps) {
-    if (this.props.gameState !== nextProps.gameState && nextProps.gameState === 'run') {
-      this.start();
-    } else if (nextProps.gameState === 'reset') {
-      this.reset();
+    if (this.props.gameRunning !== nextProps.gameRunning) {
+      if (nextProps.gameRunning === true) {
+        this.reset();
+        this.start();
+      } else if (nextProps.gameRunning === false) {
+        this.reset();
+      }
     }
   }
   componentWillUpdate() {
-    //console.log(config.initState.player.position);
+    //console.log('will update', config.initState.player.stat);
   }
   render() {
     return (
@@ -92,7 +128,7 @@ class Game extends Component {
         <Top message={this.state.message} />
         <div className="game">
           <Map map={this.generate()} />
-          <Side player={this.state.player} />
+          <Side player={this.state.player.stat} />
         </div>
       </div>
     );
@@ -103,9 +139,8 @@ class Game extends Component {
     //this.update('wall', target);
   }
   handleKeyDown = (e) => {
-    //tip on held down key https://forum.freecodecamp.org/t/dungeon-crawler-feedback-please/43394/11
-    let player = Object.assign({}, this.state.player);
-    let curPos = player.position.split('x');
+    if (this.props.gameRunning !== true) {return;}
+    const curPos = this.state.player.position.split('x');
     let xPos = parseInt(curPos[0], 10), yPos = parseInt(curPos[1], 10);
     let newPos = curPos;
     switch (e.key) {
@@ -119,11 +154,10 @@ class Game extends Component {
         break;
       default: return;
     }
-
-    let oldState = Object.assign({}, this.state);
-    let newStatePlayer = Object.assign({}, oldState.player);
-    let newStateMap = oldState.map;
-    let newStateStats = oldState.stats;
+    let newStatePlayerPosition = Object.assign({}, this.state.player.position);
+    let newStatePlayerStat = Object.assign({}, this.state.player.stat);
+    let newStateMap = Object.assign({}, this.state.map);
+    let newStateStats = Object.assign({}, this.state.stats);
 
     if (xPos < config.x && xPos >= 0 && yPos < config.y && yPos >=0) {
       newPos = xPos.toString() + 'x' + yPos.toString();
@@ -138,37 +172,47 @@ class Game extends Component {
           return;
           break;
         case 'health':
-          console.log('health', oldState.stats[newPos].hpUp);
-          let upgradeHp = oldState.stats[newPos].hpUp;
-          newStatePlayer.position = newPos;
-          newStatePlayer.hp = oldState.player.hp + upgradeHp;
+          console.log('health', this.state.stats[newPos].hpUp);
+          const upgradeHp = this.state.stats[newPos].hpUp;
+          newStatePlayerPosition = newPos;
+          newStatePlayerStat.hp = this.state.player.stat.hp + upgradeHp;
           newStateMap[newPos] = 'default';
           newStateStats[newPos] = {};
           this.setState({
             map: newStateMap,
-            player: newStatePlayer,
+            player: {
+              position: newStatePlayerPosition,
+              stat: newStatePlayerStat
+            },
             stats: newStateStats,
             message: 'HP +' + upgradeHp
           })
           break;
         case 'weapon':
-          console.log('weapon', oldState.stats[newPos].weaponUp);
-          let upgradeW = oldState.stats[newPos].weaponUp;
-          newStatePlayer.position = newPos;
-          newStatePlayer.weapon = oldState.player.weapon + upgradeW;
+          console.log('weapon', this.state.stats[newPos].weaponUp);
+          let upgradeW = this.state.stats[newPos].weaponUp;
+          newStatePlayerPosition = newPos;
+          newStatePlayerStat.weapon = this.state.player.stat.weapon + upgradeW;
           newStateMap[newPos] = 'default';
           newStateStats[newPos] = {};
           this.setState({
             map: newStateMap,
-            player: newStatePlayer,
+            player: {
+              position: newStatePlayerPosition,
+              stat: newStatePlayerStat
+            },
             stats: newStateStats,            
             message: 'Weapon +' + upgradeW
           })
           break;
         default: 
-          newStatePlayer.position = newPos;               
+          newStatePlayerPosition = newPos;               
           this.setState({
-            player: newStatePlayer
+            player: {
+              position: newStatePlayerPosition,
+              stat: newStatePlayerStat
+            },
+            message: ''
           })
       }
     }
@@ -176,19 +220,21 @@ class Game extends Component {
   start = () => {
     let oldState = Object.assign({}, this.state)
     let newState = this.generateContents(oldState);
-
+    newState.message = 'Move with your arrow keys.';
+    console.log(this.props.setting.name);
     this.setState(newState);
   }
   reset = () => {
     console.log('reset');
-    let newState = Object.assign({}, config.initState);
+    const newState = Object.assign({}, config.initState);
     this.setState(newState);
   }
   fight = (loc) => {
     let message = '';
     let map = Object.assign({}, this.state.map);
 
-    let playerStat = Object.assign({}, this.state.player);
+    let playerPosition = this.state.player.position;
+    let playerStat = Object.assign({}, this.state.player.stat);
     let enemyStat = Object.assign({}, this.state.stats);
 
     let playerAttack = 10*playerStat.level*(1+playerStat.weapon/10);
@@ -196,8 +242,8 @@ class Game extends Component {
     let enemyAttack = Math.round(enemyStat[loc].level*this.props.setting.attack*playerDefense);
 
     // randomize
-    playerAttack = this.randomize(playerAttack, 0.1);
-    enemyAttack = this.randomize(enemyAttack, 0.1);
+    playerAttack = this.randomize(playerAttack, 0.3);
+    enemyAttack = this.randomize(enemyAttack, 0.3);
 
     playerStat.hp -= enemyAttack;
     enemyStat[loc].hp -= playerAttack;
@@ -221,13 +267,16 @@ class Game extends Component {
         message = 'Enemy defeated... EXP gained: ' + expUp;
       }
       map[loc] = 'default';
-      playerStat.position = loc;
+      playerPosition = loc;
     } else {
       message = 'Enemy HP remaining: ' + enemyStat[loc].hp;
     }
     this.setState({
       map: map,
-      player: playerStat,
+      player: {
+        position: playerPosition,
+        stat: playerStat
+      },
       stats: enemyStat,
       message: message
     });
@@ -238,17 +287,53 @@ class Game extends Component {
     return Math.round(Math.random()*(max-min)+min);
   }
   generate = () => {
-    console.log('generate map');
     let map = Object.assign({}, this.state.map);
     //insert player
     map[this.state.player.position] = 'player';
+    const playerCoordinate = this.state.player.position.split('x');
+    const range = 8; // number of blocks in view, to each direction
+    const rangeX = [parseInt(playerCoordinate[0],10)-range, parseInt(playerCoordinate[0],10)+range+1];
+    const rangeY = [parseInt(playerCoordinate[1],10)-range, parseInt(playerCoordinate[1],10)+range+1];
+
     let render = [];
-    for (let j=0; j<config.y; j++) {
+    for (let j=rangeY[0]; j<rangeY[1]; j++) {
       let row = [];
-      for (let i=0; i<config.x; i++) {
-        let pos = i+'x'+j;
+      for (let i=rangeX[0]; i<rangeX[1]; i++) {
+        const pos = i+'x'+j;
+        let emoji = '';
+        switch (map[pos]) {
+          case 'player':
+            if (this.state.player.stat.hp > 70) {
+              emoji = <span className="happy" role="img" aria-label="player">&#128515;</span>;
+            } else if (this.state.player.stat.hp > 30) {
+              emoji = <span className="ok" role="img" aria-label="player">&#128528;</span>;
+            } else {
+              emoji = <span className="sad" role="img" aria-label="player">&#128553;</span>;
+            }
+            
+            break;
+          case 'enemy':
+            emoji = <span role="img" aria-label="enemy">&#128127;</span>;
+            break;
+          case 'boss':
+            emoji = <span role="img" aria-label="enemy">&#128121;</span>;
+            break;
+          case 'weapon':
+            emoji = <span role="img" aria-label="weapon">&#9876;</span>;
+            break;
+          case 'health':
+            emoji = <span role="img" aria-label="health">&#10010;</span>;
+            break;
+          default: break;
+        } 
+        let className = map[pos];
+        let distance = Math.round(Math.pow(Math.pow(i-playerCoordinate[0],2)+Math.pow(j-playerCoordinate[1],2),0.5));
+        if (distance > 7) {
+          className = 'shadow';
+          emoji = '';
+        }
         row.push(
-          <span key={pos} id={pos} style={config.style} className={map[pos]} onClick={this.handleClick} ></span>
+          <span key={pos} id={pos} style={config.style} className={className} onClick={this.handleClick} >{emoji}</span>
         );
       }
       render.push(
@@ -258,7 +343,6 @@ class Game extends Component {
     return render;
   }
   generateContents = (oldState) => {
-    console.log('generate contents');
     let types = ['enemy', 'health', 'weapon'];
     let counts = [this.props.setting.count, 10, 5];
 
@@ -307,13 +391,12 @@ class Game extends Component {
       newMap = Object.assign(newMap, updates);
     });
 
-    console.log(this.state.mapLevel.boss);
-
     newMap[config.map[this.state.mapLevel].boss] = 'boss';
     stats[config.map[this.state.mapLevel].boss] = {
       level: 3,
       hp: 100
     }
+    console.log(stats);
 
     let output = {
       map: newMap,
@@ -323,7 +406,6 @@ class Game extends Component {
     return output;
   }
   update = (val, target) => {
-    console.log('update', target);
     let newClass = val;
     if (this.state.map[target] !== 'default') { newClass = 'default' }
     let update = Object.assign({}, this.state.map);
@@ -356,9 +438,20 @@ class Map extends Component {
 }
 
 class Side extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      className: 'side'
+    }
+  }
+  componentWillReceiveProps(nextProps) {
+    if (JSON.stringify(this.props.player) !== JSON.stringify(nextProps.player)) { 
+      this.flash(); 
+    }
+  }
   render() {
     return (
-      <div className="side" style={{height: config.mapHeight}} >
+      <div className={this.state.className} style={{height: config.mapHeight}} >
         <h3>HP</h3>
         <p>{this.props.player.hp}</p>
         <h3>Level</h3>
@@ -370,15 +463,53 @@ class Side extends Component {
       </div>
     );
   }
+  flash = () => {
+    this.setState({
+      className: 'side flash'
+    });
+    setTimeout(() => { 
+      this.setState({
+        className: 'side'
+      }); 
+    }, 500);
+  }
 }
 
 class Top extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      className: 'top',
+      message: this.props.message
+    }
+  }
+  componentWillReceiveProps(nextProps) {
+    console.log('top props', this.props.message, nextProps.message);
+    if (nextProps.message) {
+      if (!this.props.message) {  
+        this.newMessage(nextProps.message);
+      } else if (nextProps.message !== this.props.message) {
+        this.newMessage(nextProps.message);
+      }
+    }
+  }
   render() {
     return (
-      <div className="top">
-        <p>{this.props.message}</p>
+      <div className={this.state.className}>
+        <p>{this.state.message}</p>
       </div>
     );
+  }
+  newMessage = (message) => {
+    this.setState({
+      className: 'top flash',
+      message: message
+    });
+    setTimeout(() => { 
+      this.setState({
+        className: 'top'
+      }); 
+    }, 500);
   }
 }
 

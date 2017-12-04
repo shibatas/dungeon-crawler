@@ -4,8 +4,8 @@ const y = 40;
 // map width
 const mapWidth = 800;
 // block size
-const w = mapWidth / x;
-const h = w;
+const w = 20;
+const h = 20;
 // height of map area
 const mapHeight = y*h;
 const defaultLevel = 0;
@@ -839,18 +839,21 @@ map[defaultLevel].wall.forEach((item) => {
   initMap[item] = 'wall';
 });
 
-let initPos = parseInt(x/2,10) + "x" + parseInt(y/2,10);
+let initPos = parseInt(x/2,10).toString() + "x" + parseInt(y/2,10).toString();
 
 let level = {
   easy: {
+    name: "Easy",
     count: 8,
     attack: 10,
   },
   medium: {
+    name: "Medium",
     count: 12,
     attack: 15
   },
   hard: {
+    name: "Hard",
     count: 20,
     attack: 20
   }
@@ -869,10 +872,12 @@ const initState = ({
   wall: map[defaultLevel].wall,
   player: {
     position: initPos,
-    hp: 100,
-    exp: 0,
-    level: 1,
-    weapon: 1
+    stat: {
+      hp: 100,
+      exp: 0,
+      level: 1,
+      weapon: 1
+    }
   },
   stats: {},
   message: 'Click BEGIN to start!'

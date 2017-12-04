@@ -1,9 +1,28 @@
+@keyframes flash {
+  from {color: white;}
+  to {color: black;}
+}
+@keyframes disappear {
+  from {opacity: 1;}
+  to {opacity: 0}
+}
+.flash {
+  animation: 0.5s flash;
+}
+.disappear {
+  animation: 3s disappear;
+  animation-fill-mode: forwards;
+}
+
 html {
   background-color: #d3d3d3;
+  height: 100%;
+  min-width: 650px;
 }
 
 body {
   height: 100%;
+  overflow: hidden;
   margin: 0;
 }
 
@@ -12,13 +31,19 @@ footer {
   margin-top: -100px;
 }
 
+button {
+  margin: 0 20px 0 20px;
+  width: 80px;
+  height: 30px;
+}
+
 .wrapper {
   min-height: 100%;
 }
 
 .App {
   text-align: center;
-  padding-bottom: 100px;
+  padding: 30px 0 100px 0;
 }
 
 .App-header {
@@ -35,7 +60,8 @@ footer {
 /* Game Area */
 .game {
   margin-bottom: 50px;
-  height: auto;
+  padding: 30px;
+  height: 300px;
   display: flex;
   justify-content: center;
 }
@@ -48,41 +74,60 @@ footer {
 .default {
   opacity: 0;
 }
+.shadow {
+  background-color: #222;
+  box-shadow: 0 0 10px #222;
+}
 .wall {
-  background-color: black;
+  background-color: gray;
   box-shadow: 1px 1px 1px black;
 }
 .player {
-  background-color: green;
-  box-shadow: 2px 2px 1px black;
-  border-radius: 50%;
+  vertical-align: top;
+  font-size: 1em;
+  font-weight: bold;
+  color: green;
+  text-shadow: 0.5px 0.5px 0.5px black;
+}
+.player .ok {
+  color: orange;
+}
+.player .sad {
+  color: blue;
 }
 .enemy {
-  background-color: orange;
-  box-shadow: 2px 2px 1px black;
-  border-radius: 50%;
+  vertical-align: top;
+  font-size: 1em;
+  font-weight: bold;
+  color: orange;
+  text-shadow: 0.5px 0.5px 0.5px black;
 }
 .boss {
-  background-color: red;
-  box-shadow: 2px 2px 1px black;
+  vertical-align: top;
+  font-size: 1em;
+  font-weight: bold;
   border-radius: 50%;
 }
 .health {
-  background-color: pink;
-  box-shadow: 2px 2px 1px black;
-  border-radius: 50%;
+  vertical-align: top;
+  font-size: 1em;
+  font-weight: bold;
+  color: red;
+  text-shadow: 0.5px 0.5px 0.5px black;
 }
 .weapon {
-  background-color: blue;
-  box-shadow: 2px 2px 1px black;
-  border-radius: 50%;
+  vertical-align: top;
+  font-size: 1em;
+  font-weight: bold;
+  color: blue;
+  text-shadow: 0.5px 0.5px 0.5px black;
 }
 /* Side Box */
 .side {
   width: 100px;
   margin-left: 20px;
 }
-
+/* Top Message */
 .top {
   height: 20px;
   width: 100%;
