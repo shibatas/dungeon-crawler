@@ -839,7 +839,7 @@ map[defaultLevel].wall.forEach((item) => {
   initMap[item] = 'wall';
 });
 
-let initPos = parseInt(x/2,10) + "x" + parseInt(y/2,10);
+let initPos = parseInt(x/2,10).toString() + "x" + parseInt(y/2,10).toString();
 
 let level = {
   easy: {
@@ -872,10 +872,12 @@ const initState = ({
   wall: map[defaultLevel].wall,
   player: {
     position: initPos,
-    hp: 100,
-    exp: 0,
-    level: 1,
-    weapon: 1
+    stat: {
+      hp: 100,
+      exp: 0,
+      level: 1,
+      weapon: 1
+    }
   },
   stats: {},
   message: 'Click BEGIN to start!'
