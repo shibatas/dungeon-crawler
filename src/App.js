@@ -279,7 +279,14 @@ class Game extends Component {
         let emoji = '';
         switch (map[pos]) {
           case 'player':
-            emoji = <span role="img" aria-label="player">&#128515;</span>;
+            if (this.state.player.hp > 70) {
+              emoji = <span className="happy" role="img" aria-label="player">&#128515;</span>;
+            } else if (this.state.player.hp > 30) {
+              emoji = <span className="ok" role="img" aria-label="player">&#128528;</span>;
+            } else {
+              emoji = <span className="sad" role="img" aria-label="player">&#128553;</span>;
+            }
+            
             break;
           case 'enemy':
             emoji = <span role="img" aria-label="enemy">&#128127;</span>;

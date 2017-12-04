@@ -66,6 +66,12 @@ footer {
   color: green;
   text-shadow: 0.5px 0.5px 0.5px black;
 }
+.player .ok {
+  color: orange;
+}
+.player .sad {
+  color: blue;
+}
 .enemy {
   vertical-align: top;
   font-size: 1em;
