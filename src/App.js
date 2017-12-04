@@ -56,13 +56,14 @@ class App extends Component {
         newState = 'run';
         break;
       case 'reset':
-        newState = 'reset';
-        break;
-      case 'pause':
         newState = 'paused';
         break;
       case 'difficulty':
-        this.difficultyToggle();
+        if (this.state.gameState === 'paused') {
+          this.difficultyToggle();
+          newState = 'paused';
+        }
+        console.log(this.state.gameState);
         break;
       default: return;
     }
@@ -99,10 +100,13 @@ class Game extends Component {
     document.addEventListener("keydown", this.handleKeyDown);
   }
   componentWillReceiveProps(nextProps) {
-    if (this.props.gameState !== nextProps.gameState && nextProps.gameState === 'run') {
-      this.start();
-    } else if (nextProps.gameState === 'reset') {
-      this.reset();
+    if (this.props.gameState !== nextProps.gameState) {
+      if (nextProps.gameState === 'run') {
+        this.reset();
+        this.start();
+      } else if (nextProps.gameState === 'paused') {
+        this.reset();
+      }
     }
   }
   componentWillUpdate() {
@@ -197,7 +201,7 @@ class Game extends Component {
     let oldState = Object.assign({}, this.state)
     let newState = this.generateContents(oldState);
     newState.message = 'Move with your arrow keys.';
-
+    console.log(this.props.setting.name);
     this.setState(newState);
   }
   reset = () => {
