@@ -36,7 +36,7 @@ class App extends Component {
     super();
     this.state = {
       gameState: 'paused',
-      setting: config.level.hard
+      setting: config.level.easy
     };
   }
   render() {
@@ -45,6 +45,7 @@ class App extends Component {
         <Game gameState={this.state.gameState} setting={this.state.setting} />
         <button id='start' onClick={this.handleClick}>Begin</button>
         <button id='reset' onClick={this.handleClick}>Reset</button>
+        <button id='difficulty' onClick={this.handleClick}>{this.state.setting.name}</button>
       </div>
     );
   }
@@ -60,11 +61,32 @@ class App extends Component {
       case 'pause':
         newState = 'paused';
         break;
+      case 'difficulty':
+        this.difficultyToggle();
+        break;
       default: return;
     }
     this.setState({
       gameState: newState
     })
+  }
+  difficultyToggle = () => {
+    let newState = {};
+    switch (this.state.setting.name) {
+      case 'Easy':
+        newState = config.level.medium;
+        break;
+      case 'Medium':
+        newState = config.level.hard;
+        break;
+      case 'Hard':
+        newState = config.level.easy;
+        break;
+      default:
+    }
+    this.setState({
+      setting: newState
+    });
   }
 }
 
@@ -103,7 +125,7 @@ class Game extends Component {
     //this.update('wall', target);
   }
   handleKeyDown = (e) => {
-    //tip on held down key https://forum.freecodecamp.org/t/dungeon-crawler-feedback-please/43394/11
+    if (this.props.gameState !== 'run') {return;}
     let player = Object.assign({}, this.state.player);
     let curPos = player.position.split('x');
     let xPos = parseInt(curPos[0], 10), yPos = parseInt(curPos[1], 10);
@@ -193,6 +215,7 @@ class Game extends Component {
     let playerAttack = 10*playerStat.level*(1+playerStat.weapon/10);
     let playerDefense = 1-(playerStat.level/10 + playerStat.weapon/20);
     let enemyAttack = Math.round(enemyStat[loc].level*this.props.setting.attack*playerDefense);
+    console.log(enemyAttack);
 
     // randomize
     playerAttack = this.randomize(playerAttack, 0.1);
