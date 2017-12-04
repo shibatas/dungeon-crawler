@@ -245,8 +245,8 @@ class Game extends Component {
     
     const playerCoordinate = player.position.split('x');
     const range = 8; // number of blocks in view, to each direction
-    const rangeX = [parseInt(playerCoordinate[0])-range, parseInt(playerCoordinate[0])+range+1];
-    const rangeY = [parseInt(playerCoordinate[1])-range, parseInt(playerCoordinate[1])+range+1];
+    const rangeX = [parseInt(playerCoordinate[0],10)-range, parseInt(playerCoordinate[0],10)+range+1];
+    const rangeY = [parseInt(playerCoordinate[1],10)-range, parseInt(playerCoordinate[1],10)+range+1];
 
     let render = [];
     for (let j=rangeY[0]; j<rangeY[1]; j++) {
@@ -256,7 +256,7 @@ class Game extends Component {
         let emoji = '';
         switch (map[pos]) {
           case 'player':
-            emoji = <span role="img" aria-label="player">&#128512;</span>;
+            emoji = <span role="img" aria-label="player">&#128515;</span>;
             break;
           case 'enemy':
             emoji = <span role="img" aria-label="enemy">&#128127;</span>;
