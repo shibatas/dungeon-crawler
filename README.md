@@ -4,7 +4,7 @@ This is a simple Dungeon Crawler game which I made for the [FCC Curriculum](http
 
 
 ## Live App
-You can play the game here: **Insert link once available**.
+You can play the game here: <http://shoheishibata.com/dungeon-crawler/>.
 
 ## Built With
 
